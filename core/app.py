@@ -22,6 +22,7 @@ class Application:
         print(query_params)
 
         input_data = self.get_wsgi_input(env)
+        # Если Пришел json, десериализуем с помощью json.loads, иначе - парсим функцией parse_params
         if 'CONTENT_TYPE' in env and env['CONTENT_TYPE'] == 'application/json':
             input_data = json.loads(input_data)
         else:

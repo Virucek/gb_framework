@@ -33,6 +33,7 @@ def contacts_view(request):
     if request['method'] == 'POST':
         data = request['data']
         f_time = datetime.now()
+        # Записываем полученное сообщение в файл в директории temp_emails
         with open(os.path.join('temp_emails', f'email-{f_time.strftime("%d. %b %Y %I_%M")}'), 'w',
                   encoding='utf-8') as f:
             f.write(f"name: {data['name']}\n")
