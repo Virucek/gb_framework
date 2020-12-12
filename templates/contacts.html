@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>{{ title }}</title>
+</head>
+<body>
+	<div class="header">
+		<ul class="menu">
+			<li><a href="/">Главная</a></li>
+			<li><a href="/about/">О проекте</a></li>
+			<li><a href="#">Контакты</a></li>
+		</ul>
+		<hr>
+	</div>
+	<h3>Напишите нам</h2>
+	<form method="post">
+		<label for="name">Имя:</label>
+		<input type="text" name="name" placeholder="Введите ваше имя" class="contact"><br>
+		<label for="e-mail">E-mail:</label>
+		<input type="email" name="e-mail" placeholder="Введите ваш e-mail" class="contact"><br>
+		<label for="theme">Тема:</label>
+		<input type="text" name="theme" placeholder="Введите тему сообщения" class="contact"><br>
+		<label for="theme">Текст:</label><br>
+		<textarea name="text" placeholder="Введите текстовое поле" class="text_letter"></textarea><br>
+		<input type="submit" value="Отправить"> <input type="reset" value="Сбросить">
+	</form>
+	<h3>Адрес</h3>
+	<ul class="address">
+		<li>Контактный номер телефона: +79999555111</li>
+		<li>Адрес: РФ, г. Москва, ул. Земляной Вал 50А/8</li>
+		<li>Email: test@test.ru</li>
+	</ul>
+	<!--<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d667.5737991235179!2d37.65397354975376!3d55.75082961590977!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54af2826f58ab%3A0x8ba52c0bf9caf67c!2z0KHQsNC00LrQviwg0LHQuNC30L3QtdGBLdGG0LXQvdGC0YA!5e0!3m2!1sru!2sru!4v1588787347561!5m2!1sru!2sru" width="600" height="450" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>-->
+	<hr>
+	<div class="footer">
+		{{ _copyright }}
+	</div>
+</body>
+</html>
