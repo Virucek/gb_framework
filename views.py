@@ -6,30 +6,34 @@ from include.codes import OK_200
 
 
 def index_view(request):
-    # context = {
-    #     'title': 'Главная'
-    # }
     title = 'Главная'
     _copyright = request.get('copyright')
+    context = {
+        'title': title,
+        '_copyright': _copyright
+    }
     return OK_200, render('index.html',
-                          title=title,
-                          _copyright=_copyright)
+                          context=context)
 
 
 def about_view(request):
-    # context = {
-    #     'title': 'О проекте'
-    # }
     title = 'О проекте'
     _copyright = request.get('copyright')
+    context = {
+        'title': title,
+        '_copyright': _copyright,
+    }
     return OK_200, render('about.html',
-                          title=title,
-                          _copyright=_copyright)
+                          context=context)
 
 
 def contacts_view(request):
     title = 'Контакты'
     _copyright = request.get('copyright')
+    context = {
+        'title': title,
+        '_copyright': _copyright,
+    }
     if request['method'] == 'POST':
         data = request['data']
         f_time = datetime.now()
@@ -41,5 +45,4 @@ def contacts_view(request):
             f.write(f"e-mail: {data['e-mail']}\n")
             f.write(f"text: {data['text']}\n")
     return OK_200, render('contacts.html',
-                          title=title,
-                          _copyright=_copyright)
+                          context=context)
