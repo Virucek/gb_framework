@@ -6,6 +6,7 @@ routers = {
     '/': index_view,
     '/index/': index_view,
     '/about/': about_view,
+    '/contacts/': contacts_view,
 }
 
 controllers = {
