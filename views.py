@@ -3,6 +3,12 @@ from datetime import datetime
 
 from core.templator import render
 from include.codes import OK_200
+from logger import Logger
+from models import MainInterface
+
+site = MainInterface()
+logger = Logger('site')
+log = logger.log
 
 
 def index_view(request):
@@ -46,3 +52,29 @@ def contacts_view(request):
             f.write(f"text: {data['text']}\n")
     return OK_200, render('contacts.html',
                           context=context)
+
+
+def categories_view(request):
+    context = {
+        'title': 'Категории',
+        '_copyright': request.get('copyright'),
+        'categories': site.categories,
+    }
+    return OK_200, render('categories.html', context=context)
+
+
+def create_category_view(request):
+    context = {
+        'title': 'Создание категории',
+        '_copyright': request.get('copyright'),
+    }
+
+    if request['method'] == 'POST':
+        data = request['data']
+        log(f'Полученные данные в запросе: \n {data}')
+        category = site.create_category(data['cat_name'])
+        site.categories.append(category)
+        context['title'] = 'Категории'
+        return OK_200, render('categories.html', context=context)
+
+    return OK_200, render('create_category.html', context=context)
