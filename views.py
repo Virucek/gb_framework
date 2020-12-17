@@ -76,6 +76,7 @@ def create_category_view(request):
         category = site.create_category(data['cat_name'])
         site.categories.append(category)
         context['title'] = 'Категории'
+        context['categories_list'] = site.categories
         return CREATED_201, render('categories.html', context=context)
 
     return OK_200, render('create_category.html', context=context)
@@ -108,9 +109,29 @@ def create_course_view(request):
         category = site.get_category_by_id(int(data['category_id']))
         new_course = site.create_course(data['course_type'], data['course_name'], category)
         site.courses.append(new_course)
-        context['title'] = 'Курсы'
+        context['title'] = 'Список курсов'
+        context['courses_list'] = site.courses
         return CREATED_201, render('courses.html', context=context)
 
     context['categories_list'] = site.categories
     context['course_types'] = site.get_course_types()
     return OK_200, render('create_course.html', context=context)
+
+
+def copy_course_view(request):
+    q_params = request['query_params']
+    context = {
+        'title': 'Список курсов',
+        '_copyright': request.get('copyright'),
+        'courses_list': site.courses,
+    }
+    if q_params and 'course' in q_params:
+        old_course = site.get_course_by_name(q_params['course'])
+        if old_course:
+            new_course = old_course.clone()
+            new_course.name = f'{old_course.name}_copy'
+            site.courses.append(new_course)
+
+        return OK_200, render('courses.html', context=context)
+    # Если запрос некорректный (поправлен ручонками) - переводим на страницу со списком курсов
+    return NOT_FOUND_404, render('courses.html', context=context)

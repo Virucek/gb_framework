@@ -2,6 +2,9 @@
 
 
 # Пользователи -- Not used right now
+from patterns.creational.prototype import PrototypeMixin
+
+
 class User:
     pass
 
@@ -37,7 +40,7 @@ class Category:
 
 
 # Курсы
-class Course:
+class Course(PrototypeMixin):
 
     def __init__(self, name, category):
         self.name = name
@@ -99,3 +102,9 @@ class MainInterface:
     @staticmethod
     def get_course_types():
         return list(CourseFactory.types.keys())
+
+    def get_course_by_name(self, name):
+        for course in self.courses:
+            if course.name == name:
+                return course
+        raise Exception(f'Курс с именем {name} отсутствует')

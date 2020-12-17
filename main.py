@@ -13,6 +13,7 @@ routers = {
     # Курсы
     '/course/': courses_view,
     '/course/create/': create_course_view,
+    '/course/copy/': copy_course_view,
 }
 
 controllers = {
