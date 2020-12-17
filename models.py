@@ -1,7 +1,7 @@
 """ Модели проекта """
 
 
-# Пользователи
+# Пользователи -- Not used right now
 class User:
     pass
 
@@ -90,3 +90,7 @@ class MainInterface:
             if cat.id == category_id:
                 return cat
         raise Exception(f'Категория с id {id} отсутствует')
+
+    def get_courses_by_category(self, category_id):
+        category = self.get_category_by_id(category_id)
+        return category.courses

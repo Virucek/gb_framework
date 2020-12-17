@@ -7,6 +7,12 @@ routers = {
     '/index/': index_view,
     '/about/': about_view,
     '/contacts/': contacts_view,
+    # Категории
+    '/category/': categories_view,
+    '/category/create/': create_category_view,
+    # Курсы
+    '/course/': courses_view,
+    '/course/create/': create_course_view,
 }
 
 controllers = {

@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 from core.templator import render
-from include.codes import OK_200
+from include.codes import *
 from logger import Logger
 from models import MainInterface
 
@@ -55,10 +55,11 @@ def contacts_view(request):
 
 
 def categories_view(request):
+    print(site.categories)
     context = {
         'title': 'Категории',
         '_copyright': request.get('copyright'),
-        'categories': site.categories,
+        'categories_list': site.categories,
     }
     return OK_200, render('categories.html', context=context)
 
@@ -73,8 +74,42 @@ def create_category_view(request):
         data = request['data']
         log(f'Полученные данные в запросе: \n {data}')
         category = site.create_category(data['cat_name'])
+        print(site.categories)
         site.categories.append(category)
+        print(site.categories)
         context['title'] = 'Категории'
-        return OK_200, render('categories.html', context=context)
+        return CREATED_201, render('categories.html', context=context)
 
     return OK_200, render('create_category.html', context=context)
+
+
+def courses_view(request):
+    q_params = request['query_params']
+    if q_params and 'category_id' in q_params:
+        courses = site.get_courses_by_category(q_params['category_id'])
+    else:
+        courses = site.courses
+    context = {
+        'text': 'Список курсов',
+        '_copyright': request.get('copyright'),
+        'courses_list': courses,
+    }
+
+    return OK_200, render('courses.html', context=context)
+
+
+def create_course_view(request):
+    context = {
+        'title': 'Создание курса',
+        '_copyright': request.get('copyright'),
+    }
+
+    if request['method'] == 'POST':
+        data = request['data']
+        log(f'Полученные данные в запросе: \n {data}')
+        category = site.get_category_by_id(data['category_id'])
+        new_course = site.create_course(data['course_type'], data['course_name'], category)
+        context['title'] = 'Курсы'
+        return CREATED_201, render('courses.html', context=context)
+
+    return OK_200, render('create_course.html', context=context)

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block menu %}
+	{% include '/include/inc_main_menu.html' %}
+{% endblock %}
+{% block main_body %}
+    {% if categories_list %}
+        {% for category in categories_list %}
+            {{ category.name }}  <a href="/courses?category_id={{category.id}}/">Список курсов</a>
+        {% endfor %}
+    {% else %}
+        Список категорий курсов пуст
+    {% endif %}
+{% endblock %}
