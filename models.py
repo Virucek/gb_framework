@@ -64,6 +64,7 @@ class CourseFactory:
         return cls.types[type_name](name, category)
 
 
+
 # Основной интерфейс
 class MainInterface:
 
@@ -92,5 +93,9 @@ class MainInterface:
         raise Exception(f'Категория с id {id} отсутствует')
 
     def get_courses_by_category(self, category_id):
-        category = self.get_category_by_id(category_id)
+        category = self.get_category_by_id(int(category_id))
         return category.courses
+
+    @staticmethod
+    def get_course_types():
+        return list(CourseFactory.types.keys())

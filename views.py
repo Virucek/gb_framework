@@ -74,9 +74,7 @@ def create_category_view(request):
         data = request['data']
         log(f'Полученные данные в запросе: \n {data}')
         category = site.create_category(data['cat_name'])
-        print(site.categories)
         site.categories.append(category)
-        print(site.categories)
         context['title'] = 'Категории'
         return CREATED_201, render('categories.html', context=context)
 
@@ -107,9 +105,12 @@ def create_course_view(request):
     if request['method'] == 'POST':
         data = request['data']
         log(f'Полученные данные в запросе: \n {data}')
-        category = site.get_category_by_id(data['category_id'])
+        category = site.get_category_by_id(int(data['category_id']))
         new_course = site.create_course(data['course_type'], data['course_name'], category)
+        site.courses.append(new_course)
         context['title'] = 'Курсы'
         return CREATED_201, render('courses.html', context=context)
 
+    context['categories_list'] = site.categories
+    context['course_types'] = site.get_course_types()
     return OK_200, render('create_course.html', context=context)

@@ -3,6 +3,7 @@
 	{% include '/include/inc_main_menu.html' %}
 {% endblock %}
 {% block main_body %}
+    <p><a href="/course/create/">Добавить курс</a></p>
     {% if courses_list %}
         {% for course in courses_list %}
             {{ course.name }}

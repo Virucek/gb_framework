@@ -3,9 +3,10 @@
 	{% include '/include/inc_main_menu.html' %}
 {% endblock %}
 {% block main_body %}
+    <p><a href="/category/create/">Добавить категорию</a></p>
     {% if categories_list %}
         {% for category in categories_list %}
-            {{ category.name }}  <a href="/courses?category_id={{category.id}}/">Список курсов</a>
+            {{ category.name }}  <a href="/course?category_id={{category.id}}">Список курсов</a> <a href="/course/create/">Добавить курс</a>
         {% endfor %}
     {% else %}
         Список категорий курсов пуст
