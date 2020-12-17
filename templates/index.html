@@ -1,26 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="utf-8">
-	<title>{{ title }}</title>
-</head>
-<body>
-	<div class="header">
-		<ul class="menu">
-			<li><a href="#">Главная</a></li>
-			<li><a href="/about/">О проекте</a></li>
-			<li><a href="/contacts/">Контакты</a></li>
-		</ul>
-		<hr>
-	</div>
+{% extends 'base.html' %}
+{% block menu %}
+	{% include '/include/inc_main_menu.html' %}
+{% endblock %}
+{% block main_body %}
 	<h1>Домашнее задание №1</h1>
-    <h3>Главная страница</h3>
+	<h3>Главная страница</h3>
 	<p>Контент контент контент.</p>
 	<br>
-	<a href="/about/">О проекте</a>
-	<hr>
-	<div class="footer">
-        {{ _copyright }}
-	</div>
-</body>
-</html>
+{% endblock %}

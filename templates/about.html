@@ -1,24 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
-	<title>{{ title }}</title>
-</head>
-<body>
-	<div class="header">
-		<ul class="menu">
-			<li><a href="/index/">Главная</a></li>
-			<li><a href="#">О проекте</a></li>
-			<li><a href="/contacts/">Контакты</a></li>
-		</ul>
-		<hr>
-	</div>
+{% extends 'base.html' %}
+{% block menu %}
+	{% include '/include/inc_main_menu.html' %}
+{% endblock %}
+{% block main_body %}
 	<h2>О проекте</h2>
 	<p> Кастомный фреймворк для разработки веб-приложений / веб-порталов. </p>
 	<p> Разработчик: Айкин Яков </p>
-	<hr>
-	<div class="footer">
-		{{ _copyright }}
-	</div>
-</body>
-</html>
+{% endblock %}

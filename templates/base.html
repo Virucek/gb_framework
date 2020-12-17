@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>{% block title %}{{ title }}{% endblock %}</title>
+</head>
+<body>
+	<div class="header">
+        {% block menu %}
+        {% endblock %}
+	</div>
+    <hr>
+    {% block main_body %}
+    {% endblock %}
+	<hr>
+    {% block footer %}
+    <div class="footer">
+        {{ _copyright | default('Aikin Yakov &copy; Все права защищены', true) }}
+    </div>
+    {% endblock %}
+</body>
+</html>
