@@ -32,11 +32,23 @@ class UserFactory:
 class Category:
     id_ = 0
 
-    def __init__(self, name):
+    def __init__(self, name, parent_category):
         self.id = Category.id_
         Category.id_ += 1
         self.name = name
         self.courses = []
+        self.parent_category = parent_category
+        self.child_categories = []
+
+    def course_count(self):
+        course_count = len(self.courses)
+        if self.child_categories:
+            for cat_ in self.child_categories:
+                course_count += cat_.course_count()
+        return course_count
+
+    def add_child(self, category):
+        self.child_categories.append(category)
 
 
 # Курсы
@@ -67,7 +79,6 @@ class CourseFactory:
         return cls.types[type_name](name, category)
 
 
-
 # Основной интерфейс
 class MainInterface:
 
@@ -82,8 +93,11 @@ class MainInterface:
         return UserFactory.create(type_name)
 
     @staticmethod
-    def create_category(name):
-        return Category(name)
+    def create_category(name, parent_category=None):
+        category = Category(name, parent_category)
+        if parent_category is not None:
+            parent_category.add_child(category)
+        return category
 
     @staticmethod
     def create_course(type_name, name, category):

@@ -18,10 +18,11 @@ class Logger(metaclass=SingletoneName):
             f.write(f'{datetime.now()} ------- {text}\n')
 
     def debug(self, func):
-        def wrapper():
+        def wrapper(*args, **kwargs):
             start = time.perf_counter()
-            func()
+            result = func(*args, **kwargs)
             end = time.perf_counter()
-            print(f'debug ---- call {func.__name__}, exec time = {end - start} sec')
-            self.log(f'debug ---- call {func.__name__}, exec time = {end - start} sec')
+            print(f'debug ---- call {func.__name__}, exec time = {(end - start):.3f} sec')
+            self.log(f'debug ---- call {func.__name__}, exec time = {(end - start):.3f} sec')
+            return result
         return wrapper

@@ -24,7 +24,7 @@ def index_view(request):
                           context=context)
 
 
-@debug
+#@debug
 def about_view(request):
     title = 'О проекте'
     _copyright = request.get('copyright')
@@ -36,7 +36,7 @@ def about_view(request):
                           context=context)
 
 
-@debug
+#@debug
 def contacts_view(request):
     title = 'Контакты'
     _copyright = request.get('copyright')
@@ -58,7 +58,7 @@ def contacts_view(request):
                           context=context)
 
 
-@debug
+#@debug
 def categories_view(request):
     print(site.categories)
     context = {
@@ -69,17 +69,22 @@ def categories_view(request):
     return OK_200, render('categories.html', context=context)
 
 
-@debug
+#@debug
 def create_category_view(request):
     context = {
         'title': 'Создание категории',
         '_copyright': request.get('copyright'),
+        'categories_list': site.categories,
     }
 
     if request['method'] == 'POST':
         data = request['data']
         log(f'Полученные данные в запросе: \n {data}')
-        category = site.create_category(data['cat_name'])
+        parent_category = None
+        category_id = data.get('category_id')
+        if category_id:
+            parent_category = site.get_category_by_id(int(category_id))
+        category = site.create_category(data['cat_name'], parent_category)
         site.categories.append(category)
         context['title'] = 'Категории'
         context['categories_list'] = site.categories
@@ -88,10 +93,10 @@ def create_category_view(request):
     return OK_200, render('create_category.html', context=context)
 
 
-@debug
+#@debug
 def courses_view(request):
     q_params = request['query_params']
-    if q_params and 'category_id' in q_params:
+    if q_params.get('category_id'):
         courses = site.get_courses_by_category(q_params['category_id'])
     else:
         courses = site.courses
@@ -104,7 +109,7 @@ def courses_view(request):
     return OK_200, render('courses.html', context=context)
 
 
-@debug
+#@debug
 def create_course_view(request):
     context = {
         'title': 'Создание курса',
@@ -126,7 +131,7 @@ def create_course_view(request):
     return OK_200, render('create_course.html', context=context)
 
 
-@debug
+#@debug
 def copy_course_view(request):
     q_params = request['query_params']
     context = {
@@ -134,7 +139,7 @@ def copy_course_view(request):
         '_copyright': request.get('copyright'),
         'courses_list': site.courses,
     }
-    if q_params and 'course' in q_params:
+    if q_params.get('course'):
         old_course = site.get_course_by_name(q_params['course'])
         if old_course:
             new_course = old_course.clone()
