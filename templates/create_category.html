@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block menu %}
+	{% include '/include/inc_main_menu.html' %}
+{% endblock %}
+{% block main_body %}
+	<form method="post">
+		<label for="cat_name">Имя:</label>
+		<input type="text" name="cat_name" placeholder="Введите название категории">
+        <input type="submit" value="Отправить">
+        <input type="reset" value="Сбросить">
+	</form>
+{% endblock %}

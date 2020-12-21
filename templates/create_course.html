@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block menu %}
+	{% include '/include/inc_main_menu.html' %}
+{% endblock %}
+{% block main_body %}
+	<form method="post">
+		<label for="course_name">Название:</label>
+		<input type="text" name="course_name" placeholder="Введите название курса">
+        <br>
+        <select size="2" name="course_type">
+            {% for type_ in course_types %}
+            <option value="{{type_}}">{{type_}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <select size="2" name="category_id">
+            {% for category in categories_list %}
+            <option value="{{category.id}}">{{category.name}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <input type="submit" value="Отправить">
+        <input type="reset" value="Сбросить">
+	</form>
+{% endblock %}
