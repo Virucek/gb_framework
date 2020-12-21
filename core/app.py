@@ -15,7 +15,6 @@ class Application:
 
     def __call__(self, env, start_response):
         uri = self.check_uri(env['PATH_INFO'])
-        print(env)
         method = env['REQUEST_METHOD']
 
         query_params = self.parse_params(env['QUERY_STRING'])

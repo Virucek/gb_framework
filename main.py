@@ -1,5 +1,9 @@
+import sys
+
 from controllers import *
 from core.app import Application
+from core.debug_app import DebugApplication
+from core.fake_app import FakeApplication
 from core.templator import render
 from include.codes import *
 from logger import Logger
@@ -124,7 +128,15 @@ controllers = {
     add_copyright_controller,
 }
 
-app = application = Application(routers, controllers)
+print(sys.argv)
+if 'fake' in sys.argv:
+    application = FakeApplication(routers, controllers)
+elif 'debug' in sys.argv:
+    application = DebugApplication(routers, controllers)
+else:
+    application = Application(routers, controllers)
+
+app = application
 
 
 @debug
@@ -151,7 +163,7 @@ def create_course_view(request):
 
 
 @debug
-@app.route('/course/copy/')
+@app.route('/course/copy/')  # todo: при копировании не добавляет в общий подсчет курсов по категориям
 def copy_course_view(request):
     q_params = request['query_params']
     context = {
