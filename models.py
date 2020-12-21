@@ -122,3 +122,11 @@ class MainInterface:
             if course.name == name:
                 return course
         raise Exception(f'Курс с именем {name} отсутствует')
+
+    def get_category_tree(self):
+        categories_list = []
+        if self.categories:
+            for cat in self.categories:
+                if cat.parent_category is None:
+                    categories_list.append(cat)
+        return categories_list

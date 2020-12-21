@@ -64,7 +64,7 @@ def categories_view(request):
     context = {
         'title': 'Категории',
         '_copyright': request.get('copyright'),
-        'categories_list': site.categories,
+        'categories_list': site.get_category_tree(),
     }
     return OK_200, render('categories.html', context=context)
 
@@ -87,7 +87,7 @@ def create_category_view(request):
         category = site.create_category(data['cat_name'], parent_category)
         site.categories.append(category)
         context['title'] = 'Категории'
-        context['categories_list'] = site.categories
+        context['categories_list'] = site.get_category_tree()
         return CREATED_201, render('categories.html', context=context)
 
     return OK_200, render('create_category.html', context=context)
