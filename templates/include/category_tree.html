@@ -1,9 +1,7 @@
 <li>
-    <p>
         {{ category.name }}&nbsp;-&nbsp;&nbsp;{{ category.course_count }}
         <a href="/course?category_id={{category.id}}">Список курсов</a>
         <a href="/course/create/">Добавить курс</a>
-    </p>
     {% if category.child_categories %}
         <ul>
         {% for child in category.child_categories %}

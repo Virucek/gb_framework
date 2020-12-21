@@ -5,6 +5,7 @@ from core.templator import render
 from include.codes import *
 from logger import Logger
 from models import MainInterface
+# todo: Добавить разделение views и app на разные скрипты (проблема в @app.route)
 
 site = MainInterface()
 logger = Logger('site')
