@@ -110,6 +110,7 @@ def courses_view(request):
 
 
 @debug
+# @app.route('/course/create/')
 def create_course_view(request):
     context = {
         'title': 'Создание курса',
@@ -132,6 +133,7 @@ def create_course_view(request):
 
 
 @debug
+# @app.route('/course/copy/')
 def copy_course_view(request):
     q_params = request['query_params']
     context = {
