@@ -66,3 +66,10 @@ class Application:
         content_len = env.get('CONTENT_LENGTH')
         content_len = int(content_len) if content_len else 0
         return env['wsgi.input'].read(content_len).decode('utf-8') if content_len > 0 else ''
+
+    def route(self, url):
+        def wrapper(view):
+            self.routers[url] = view
+        return wrapper
+
+
