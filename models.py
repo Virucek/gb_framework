@@ -40,12 +40,13 @@ class Category:
         self.parent_category = parent_category
         self.child_categories = []
 
+    @property
     def course_count(self):
-        course_count = len(self.courses)
+        res = len(self.courses)
         if self.child_categories:
             for cat_ in self.child_categories:
-                course_count += cat_.course_count()
-        return course_count
+                res += cat_.course_count
+        return res
 
     def add_child(self, category):
         self.child_categories.append(category)

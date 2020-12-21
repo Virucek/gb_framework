@@ -24,7 +24,7 @@ def index_view(request):
                           context=context)
 
 
-#@debug
+@debug
 def about_view(request):
     title = 'О проекте'
     _copyright = request.get('copyright')
@@ -36,7 +36,7 @@ def about_view(request):
                           context=context)
 
 
-#@debug
+@debug
 def contacts_view(request):
     title = 'Контакты'
     _copyright = request.get('copyright')
@@ -58,7 +58,7 @@ def contacts_view(request):
                           context=context)
 
 
-#@debug
+@debug
 def categories_view(request):
     print(site.categories)
     context = {
@@ -69,7 +69,7 @@ def categories_view(request):
     return OK_200, render('categories.html', context=context)
 
 
-#@debug
+@debug
 def create_category_view(request):
     context = {
         'title': 'Создание категории',
@@ -93,7 +93,7 @@ def create_category_view(request):
     return OK_200, render('create_category.html', context=context)
 
 
-#@debug
+@debug
 def courses_view(request):
     q_params = request['query_params']
     if q_params.get('category_id'):
@@ -109,7 +109,7 @@ def courses_view(request):
     return OK_200, render('courses.html', context=context)
 
 
-#@debug
+@debug
 def create_course_view(request):
     context = {
         'title': 'Создание курса',
@@ -131,7 +131,7 @@ def create_course_view(request):
     return OK_200, render('create_course.html', context=context)
 
 
-#@debug
+@debug
 def copy_course_view(request):
     q_params = request['query_params']
     context = {
