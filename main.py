@@ -12,6 +12,8 @@ from models import MainInterface
 
 site = MainInterface()
 logger = Logger('site')
+logger.add_log_method(logger.write_file)
+logger.add_log_method(logger.write_console)
 log = logger.log
 debug = logger.debug
 
