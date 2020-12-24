@@ -1,0 +1,14 @@
+<li>
+        {{ category.name }}&nbsp;-&nbsp;&nbsp;{{ category.course_count }}
+        <a href="/course?category_id={{category.id}}">Список курсов</a>
+        <a href="/course/create/">Добавить курс</a>
+    {% if category.child_categories %}
+        <ul>
+        {% for child in category.child_categories %}
+            {% with category=child, template_name="/include/category_tree.html" %}
+                {% include template_name %}
+            {%endwith%}
+        {% endfor %}
+        </ul>
+    {%endif%}
+</li>

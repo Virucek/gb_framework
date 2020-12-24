@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime
 
 from patterns.creational.singletones import SingletoneName
@@ -15,3 +16,13 @@ class Logger(metaclass=SingletoneName):
         print(f'logger -- {text}')
         with open(self.logfile, 'a', encoding='utf-8') as f:
             f.write(f'{datetime.now()} ------- {text}\n')
+
+    def debug(self, func):
+        def wrapper(*args, **kwargs):
+            start = time.perf_counter()
+            result = func(*args, **kwargs)
+            end = time.perf_counter()
+            print(f'debug ---- call {func.__name__}, exec time = {(end - start):.3f} sec')
+            self.log(f'debug ---- call {func.__name__}, exec time = {(end - start):.3f} sec')
+            return result
+        return wrapper

@@ -5,7 +5,13 @@
 {% block main_body %}
 	<form method="post">
 		<label for="cat_name">Имя:</label>
-		<input type="text" name="cat_name" placeholder="Введите название категории">
+		<input type="text" name="cat_name" placeholder="Введите название категории"><br>
+		<select size="2" name="category_id">
+            {% for category in categories_list %}
+            <option value="{{category.id}}">{{category.name}}</option>
+            {% endfor %}
+        </select>
+		<br>
         <input type="submit" value="Отправить">
         <input type="reset" value="Сбросить">
 	</form>
