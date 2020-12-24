@@ -8,14 +8,19 @@ from core.fake_app import FakeApplication
 from core.templator import render
 from include.codes import *
 from logger import Logger
-from models import MainInterface
+from models import MainInterface, EmailNotifier, SmsNotifier
 
 site = MainInterface()
+# Настройка логгера
 logger = Logger('site')
 logger.add_log_method(logger.write_file)
 logger.add_log_method(logger.write_console)
 log = logger.log
 debug = logger.debug
+
+# Определение наблюдателей
+email_notifier = EmailNotifier()
+sms_notifier = SmsNotifier()
 
 
 @debug
@@ -156,6 +161,10 @@ def create_course_view(request):
         category = site.get_category_by_id(int(data['category_id']))
         new_course = site.create_course(data['course_type'], data['course_name'], category)
         site.courses.append(new_course)
+        # Привязка наблюдателей к новому курсу
+        new_course.attach(sms_notifier)
+        new_course.attach(email_notifier)
+
         context['title'] = 'Список курсов'
         context['courses_list'] = site.courses
         return CREATED_201, render('courses.html', context=context)
@@ -180,6 +189,9 @@ def copy_course_view(request):
             new_course = old_course.clone()
             new_course.name = f'{old_course.name}_copy'
             site.courses.append(new_course)
+            # Привязка наблюдателей к курсу
+            new_course.attach(sms_notifier)
+            new_course.attach(email_notifier)
 
         return OK_200, render('courses.html', context=context)
     # Если запрос некорректный (поправлен ручонками) - переводим на страницу со списком курсов

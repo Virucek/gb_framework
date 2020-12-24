@@ -1,6 +1,5 @@
 """ Модели проекта """
-
-
+from patterns.behavioral.observer import Observer, Subject
 from patterns.creational.prototype import PrototypeMixin
 
 
@@ -55,17 +54,24 @@ class Category:
 
 
 # Курсы
-class Course(PrototypeMixin):
+class Course(PrototypeMixin, Subject):
 
     def __init__(self, name, category):
         self.name = name
         self.category = category
         self.category.courses.append(self)
         self.students = []
+        super().__init__()
 
     def add_student(self, student):
         self.students.append(student)
         student.courses.append(self)
+        self._subject_state = student
+        self._notify()
+
+    @property
+    def new_student(self):
+        return self._subject_state
 
 
 class OnlineCourse(Course):
@@ -85,6 +91,16 @@ class CourseFactory:
     @classmethod
     def create(cls, type_name, name, category):
         return cls.types[type_name](name, category)
+
+
+class SmsNotifier(Observer):
+    def update(self, subject):
+        print(f'SMS: студент {subject.new_student.name} присоединился к курсу {subject.name}')
+
+
+class EmailNotifier(Observer):
+    def update(self, subject):
+        print(f'EMAIL: студент {subject.new_student.name} присоединился к курсу {subject.name}')
 
 
 # Основной интерфейс
