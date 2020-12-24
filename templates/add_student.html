@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block menu %}
+	{% include '/include/inc_main_menu.html' %}
+{% endblock %}
+{% block main_body %}
+	<form method="post">
+        {% if students_list %}
+		<select size="4" name="student_name">
+            {% for student in students_list %}
+            <option value="{{ student.name }}">{{ student.name }}</option>
+            {% endfor %}
+        </select>
+        {% elif student %}
+        <label for="name">Имя студента:</label>
+        <input type="text" name="student_name" value="{{ student }}" readonly>
+        {% endif %}
+        <br>
+        <select size="4" name="course_name">
+            {% for course in courses_list %}
+            <option value="{{ course.name }}">{{ course.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <input type="submit" value="Добавить">
+        <input type="reset" value="Сбросить">
+	</form>
+{% endblock %}

@@ -1,3 +1,4 @@
+import os
 import sys
 
 from controllers import *
@@ -181,3 +182,62 @@ def copy_course_view(request):
         return OK_200, render('courses.html', context=context)
     # Если запрос некорректный (поправлен ручонками) - переводим на страницу со списком курсов
     return NOT_FOUND_404, render('courses.html', context=context)
+
+
+@app.route('/student/')
+def students_view(request):
+    q_params = request['query_params']
+    if q_params.get('course'):
+        students = site.get_students_by_course(q_params['course'])
+    else:
+        students = site.students
+    context = {
+        'title': 'Список студентов',
+        '_copyright': request.get('copyright'),
+        'students_list': students,
+    }
+    return OK_200, render('students.html', context=context)
+
+
+@app.route('/student/create/')
+def create_student_view(request):
+    context = {
+        'title': 'Заведение студента',
+        '_copyright': request.get('copyright'),
+    }
+    if request['method'] == 'POST':
+        data = request['data']
+        log(f'Полученные данные на создание студента:\n{data}')
+        new_student = site.create_user('student', data['name'])
+        site.students.append(new_student)
+        context['title'] = 'Список студентов'
+        context['students_list'] = site.students
+        return CREATED_201, render('students.html', context=context)
+
+    return OK_200, render('create_student.html', context=context)
+
+
+@app.route('/student/course/add/')
+def add_student_to_course(request):
+    context = {
+        'title': 'Добавление студента к курсу',
+        '_copyright': request.get('copyright'),
+    }
+    if request['method'] == 'POST':
+        data = request['data']
+        log(f'Полученные данные на добавление студента к курсу:\n{data}')
+        course = site.get_course_by_name(data['course_name'])
+        student = site.get_student_by_name(data['student_name'])
+        course.add_student(student)
+        context['title'] = 'Список студентов'
+        context['students_list'] = site.students
+        return CREATED_201, render('students.html', context=context)
+
+    q_params = request['query_params']
+    student_name = q_params.get('student')
+    if student_name:
+        context['student'] = student_name
+    else:
+        context['students_list'] = site.students
+    context['courses_list'] = site.courses
+    return OK_200, render('add_student.html', context=context)

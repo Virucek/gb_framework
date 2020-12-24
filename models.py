@@ -1,16 +1,18 @@
 """ Модели проекта """
 
 
-# Пользователи -- Not used right now
 from patterns.creational.prototype import PrototypeMixin
 
 
 class User:
-    pass
+    def __init__(self, name):
+        self.name = name
 
 
 class Student(User):
-    pass
+    def __init__(self, name):
+        self.courses = []
+        super(Student, self).__init__(name)
 
 
 class Teacher(User):
@@ -24,8 +26,8 @@ class UserFactory:
     }
 
     @classmethod
-    def create(cls, type_name):
-        return cls.types[type_name]()
+    def create(cls, type_name, name):
+        return cls.types[type_name](name)
 
 
 # Категории Курсов
@@ -59,6 +61,11 @@ class Course(PrototypeMixin):
         self.name = name
         self.category = category
         self.category.courses.append(self)
+        self.students = []
+
+    def add_student(self, student):
+        self.students.append(student)
+        student.courses.append(self)
 
 
 class OnlineCourse(Course):
@@ -90,8 +97,8 @@ class MainInterface:
         self.categories = []
 
     @staticmethod
-    def create_user(type_name):
-        return UserFactory.create(type_name)
+    def create_user(type_name, name):
+        return UserFactory.create(type_name, name)
 
     @staticmethod
     def create_category(name, parent_category=None):
@@ -131,3 +138,13 @@ class MainInterface:
                 if cat.parent_category is None:
                     categories_list.append(cat)
         return categories_list
+
+    def get_students_by_course(self, course):
+        course = self.get_course_by_name(course)
+        return course.students
+
+    def get_student_by_name(self, name):
+        for student in self.students:
+            if student.name == name:
+                return student
+        raise Exception(f'Студент с именем {name} отсутствует')
