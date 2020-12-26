@@ -1,4 +1,6 @@
 """ Модели проекта """
+import json
+
 from patterns.behavioral.observer import Observer, Subject
 from patterns.creational.prototype import PrototypeMixin
 
@@ -107,6 +109,17 @@ class SmsNotifier(Observer):
 class EmailNotifier(Observer):
     def update(self, subject):
         print(f'EMAIL: студент {subject.new_student.name} присоединился к курсу {subject.name}')
+
+
+class BaseSerializer:
+    def __init__(self, object):
+        self.object = object
+
+    def save(self):
+        return json.dumps(self.object)
+
+    def load(self):
+        return json.loads(self.object)
 
 
 # Основной интерфейс

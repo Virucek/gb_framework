@@ -8,7 +8,7 @@ from core.fake_app import FakeApplication
 from core.templator import render
 from include.codes import *
 from logger import Logger, FileWriter
-from models import MainInterface, EmailNotifier, SmsNotifier
+from models import MainInterface, EmailNotifier, SmsNotifier, BaseSerializer
 
 site = MainInterface()
 # Настройка логгера
@@ -75,6 +75,13 @@ def categories_view(request):
         '_copyright': request.get('copyright'),
         'categories_list': site.get_category_tree(),
     }
+    # Проверка итератора по категории
+    print('########################---------------##################################')
+    for category in site.categories:
+        print('---------------------------------------#####-------------------------')
+        print(category.id, category.name)
+        for course in category:
+            print(course.name)
     return OK_200, render('categories.html', context=context)
 
 
@@ -254,3 +261,26 @@ def add_student_to_course(request):
         context['students_list'] = site.students
     context['courses_list'] = site.courses
     return OK_200, render('add_student.html', context=context)
+
+
+@app.route('/course/api/')
+def course_api(request):
+    res_dict = {}
+    if site.courses:
+        id_c = 0
+        for course in site.courses:
+            students = []
+            for student in course:
+                students.append(student.name)
+            course_dict = {
+                'name': course.name,
+                'category': course.category.name,
+                'students': students,
+            }
+            res_dict[id_c] = course_dict
+            id_c += 1
+    else:
+        res_dict['error_text'] = 'there are no courses yet'
+    res = BaseSerializer(res_dict).save()
+    log(f'Вызван api курсов - {res}')
+    return OK_200, res
