@@ -41,6 +41,9 @@ class Category:
         self.parent_category = parent_category
         self.child_categories = []
 
+    def __getitem__(self, item):
+        return self.courses[item]
+
     @property
     def course_count(self):
         res = len(self.courses)
@@ -62,6 +65,9 @@ class Course(PrototypeMixin, Subject):
         self.category.courses.append(self)
         self.students = []
         super().__init__()
+
+    def __getitem__(self, item):
+        return self.students[item]
 
     def add_student(self, student):
         self.students.append(student)
