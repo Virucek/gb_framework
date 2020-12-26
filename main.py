@@ -7,14 +7,12 @@ from core.debug_app import DebugApplication
 from core.fake_app import FakeApplication
 from core.templator import render
 from include.codes import *
-from logger import Logger
+from logger import Logger, FileWriter
 from models import MainInterface, EmailNotifier, SmsNotifier
 
 site = MainInterface()
 # Настройка логгера
-logger = Logger('site')
-logger.add_log_method(logger.write_file)
-logger.add_log_method(logger.write_console)
+logger = Logger('site', FileWriter('site'))
 log = logger.log
 debug = logger.debug
 
@@ -145,6 +143,7 @@ else:
     application = Application(routers, controllers)
 
 app = application
+log('Запущено приложение!')
 
 
 @debug
