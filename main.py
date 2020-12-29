@@ -7,9 +7,12 @@ from core.app_cbv import ListView, CreateView
 from core.debug_app import DebugApplication
 from core.fake_app import FakeApplication
 from core.templator import render
+from db.create_db import create_db
+from db.mappers import MapperRegistry
 from include.codes import *
 from logger import Logger, FileWriter
 from models import MainInterface, EmailNotifier, SmsNotifier, BaseSerializer
+from patterns.orm.unit_of_work import UnitOfWork
 
 site = MainInterface()
 # Настройка логгера
@@ -20,6 +23,12 @@ debug = logger.debug
 # Определение наблюдателей
 email_notifier = EmailNotifier()
 sms_notifier = SmsNotifier()
+
+# Определение Базы и мапперов
+create_db()
+UnitOfWork.new_current()
+UnitOfWork.get_current().set_mapper_registry(MapperRegistry)
+commit = UnitOfWork.get_current().commit
 
 
 @debug
@@ -82,18 +91,23 @@ class CategoriesListView(ListView):
 class CategoryCreateView(CreateView):
     title = 'Создание категории'
     template = 'create_category.html'
+    mapper = MapperRegistry.get_curr_mapper('categories')
+    categories = mapper.all()
     extra_context = {
-        'categories_list': site.categories,
+        'categories_list': categories,
     }
 
     def create_object(self, data):
         parent_category = None
         category_id = data.get('category_id')
         if category_id:
-            parent_category = site.get_category_by_id(int(category_id))
+            parent_category = self.mapper.get_by_id(int(category_id))
         category_name = data['cat_name']
         category = site.create_category(category_name, parent_category)
         site.categories.append(category)
+        category.mark_new()
+        commit()
+        # print('category.id', category.id)
 
 
 # @debug

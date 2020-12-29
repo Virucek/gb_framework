@@ -9,10 +9,16 @@ class UnitOfWork:
         self.dirty_objects = []
         self.removed_objects = []
 
+    def clean(self):
+        self.new_objects = []
+        self.dirty_objects = []
+        self.removed_objects = []
+
     def set_mapper_registry(self, MapperRegistry):
         self.MapperRegistry = MapperRegistry
 
     def register_new(self, object_):
+        print('object_', object_)
         self.new_objects.append(object_)
 
     def register_updated(self, object_):
@@ -25,9 +31,11 @@ class UnitOfWork:
         self.insert_new()
         self.update_dirty()
         self.delete_removed()
+        self.clean()
 
     def insert_new(self):
         for obj in self.new_objects:
+            print('new_obj', obj)
             self.MapperRegistry.get_mapper(obj).insert(obj)
 
     def update_dirty(self):

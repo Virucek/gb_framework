@@ -82,8 +82,8 @@ class CategoryMapper(BaseMapper):
         self.cursor.execute(statement)
         result = []
         for rec in self.cursor.fetchall():
-            id, name = rec
-            category = Category(name)
+            id, name, parent_category = rec
+            category = Category(name, parent_category)
             category.id = id
             result.append(category)
         return result
@@ -92,17 +92,22 @@ class CategoryMapper(BaseMapper):
         statement = f'SELECT * FROM {self.tablename} WHERE id = ?'
         self.cursor.execute(statement, (id,))
         result = self.cursor.fetchone()
+        print('result category by id', result)
         if result:
-            return Category(*result)
+            id, name, parent_category = result
+            category = Category(name, parent_category)
+            category.id = id
+            return category
         else:
             raise RecordNotFoundException(f'record with id = {id} not found')
 
     def insert(self, obj):
-        statement = f'INSERT INTO {self.tablename} (id, name, parent_category)' \
-                    f' VALUES (?, ?, ?)'
-        self.cursor.execute(statement, (obj.id, obj.name, obj.parent_category,))
+        statement = f'INSERT INTO {self.tablename} (name, parent_category)' \
+                    f' VALUES (?, ?)'
+        print('obj', obj, obj.name, obj.parent_category,)
+        self.cursor.execute(statement, (obj.name, obj.parent_category.id,))
         try:
-            self.cursor.commit()
+            self.connection.commit()
         except Exception as e:
             raise CommitException(e)
 
@@ -110,7 +115,7 @@ class CategoryMapper(BaseMapper):
         statement = f'DELETE FROM {self.tablename} WHERE id = ?'
         self.cursor.execute(statement, (obj.id,))
         try:
-            self.cursor.commit()
+            self.connection.commit()
         except Exception as e:
             raise DeleteException(e)
 
@@ -145,7 +150,7 @@ class CourseMapper(BaseMapper):
                         f' VALUES (?, ?, ?)'
         self.cursor.execute(statement, (obj.id, obj.name, obj.parent_category,))
         try:
-            self.cursor.commit()
+            self.connection.commit()
         except Exception as e:
             raise CommitException(e)
 
@@ -153,7 +158,7 @@ class CourseMapper(BaseMapper):
         statement = f'DELETE FROM {self.tablename} WHERE id = ?'
         self.cursor.execute(statement, (obj.id,))
         try:
-            self.cursor.commit()
+            self.connection.commit()
         except Exception as e:
             raise DeleteException(e)
 
@@ -177,7 +182,7 @@ class CategoryCourseMapper(BaseMapper):
                     f'VALUES (?, ?)'
         self.cursor.execute(statement, (course.id, category.id,))
         try:
-            self.cursor.commit()
+            self.connection.commit()
         except Exception as e:
             raise CommitException(e)
 
@@ -185,7 +190,7 @@ class CategoryCourseMapper(BaseMapper):
         statement = f'DELETE FROM {self.tablename} WHERE category_id = ? AND course_id = ?'
         self.cursor.execute(statement, (category.id, course.id,))
         try:
-            self.cursor.commit()
+            self.connection.commit()
         except Exception as e:
             raise DeleteException(e)
 
@@ -200,11 +205,13 @@ class MapperRegistry:
 
     @staticmethod
     def get_mapper(obj):
-        if isinstance(obj, StudentMapper):
+        if isinstance(obj, Student):
             return StudentMapper(conn)
-        elif isinstance(obj, CategoryMapper):
+        elif isinstance(obj, Category):
             return CategoryMapper(conn)
-        elif isinstance(obj, CourseMapper):
+        elif isinstance(obj, Course):
             return CourseMapper(conn)
-        elif isinstance(obj, CategoryCourseMapper):
-            return CategoryCourseMapper(conn)
+
+    @classmethod
+    def get_curr_mapper(cls, name):
+        return cls.mappers[name](conn)
