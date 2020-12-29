@@ -35,7 +35,7 @@ class UserFactory:
 class Category:
     id_ = 0
 
-    def __init__(self, name, parent_category):
+    def __init__(self, name, parent_category=None):
         self.id = Category.id_
         Category.id_ += 1
         self.name = name
