@@ -1,6 +1,6 @@
 import sqlite3
 
-from models import Student, Category, Course, OnlineCourse
+from models import Student, Category, Course, OnlineCourse, OfflineCourse
 
 dbname = 'db.sqlite'
 conn = sqlite3.connect(dbname)
@@ -105,7 +105,10 @@ class CategoryMapper(BaseMapper):
         statement = f'INSERT INTO {self.tablename} (name, parent_category)' \
                     f' VALUES (?, ?)'
         print('obj', obj, obj.name, obj.parent_category,)
-        self.cursor.execute(statement, (obj.name, obj.parent_category.id,))
+        if obj.parent_category is not None:
+            self.cursor.execute(statement, (obj.name, obj.parent_category.id,))
+        else:
+            self.cursor.execute(statement, (obj.name, obj.parent_category,))
         try:
             self.connection.commit()
         except Exception as e:
@@ -121,8 +124,9 @@ class CategoryMapper(BaseMapper):
 
 
 class CourseMapper(BaseMapper):
-    def __init__(self, connection):
+    def __init__(self, connection, type):
         super().__init__(connection)
+        self.type = type
         self.tablename = 'courses'
 
     def all(self):
@@ -130,25 +134,32 @@ class CourseMapper(BaseMapper):
         self.cursor.execute(statement)
         result = []
         for rec in self.cursor.fetchall():
-            id, name = rec
-            category = Course(name)
-            category.id = id
-            result.append(category)
+            id, name, type, category = rec
+            if type == 'online':
+                course = OnlineCourse(name, category)
+            else:
+                course = OfflineCourse(name, category)
+            course.id = id
+            result.append(course)
         return result
 
     def get_by_id(self, id):
-        statement = f'SELECT * FROM {self.tablename} WHERE id = ?'
+        statement = f'SELECT name, type, category FROM {self.tablename} WHERE id = ?'
         self.cursor.execute(statement, (id,))
         result = self.cursor.fetchone()
         if result:
-            return Course(*result)
+            name, type_, category = result
+            if type_ == 'online':
+                return OnlineCourse(name, category)
+            else:
+                return OfflineCourse(name, category)
         else:
             raise RecordNotFoundException(f'record with id = {id} not found')
 
     def insert(self, obj):
-        statement = f'INSERT INTO {self.tablename} (id, name, type)' \
+        statement = f'INSERT INTO {self.tablename} (id, name)' \
                         f' VALUES (?, ?, ?)'
-        self.cursor.execute(statement, (obj.id, obj.name, obj.parent_category,))
+        self.cursor.execute(statement, (obj.id, obj.name, obj.type,))
         try:
             self.connection.commit()
         except Exception as e:
@@ -209,8 +220,10 @@ class MapperRegistry:
             return StudentMapper(conn)
         elif isinstance(obj, Category):
             return CategoryMapper(conn)
-        elif isinstance(obj, Course):
-            return CourseMapper(conn)
+        elif isinstance(obj, OnlineCourse):
+            return CourseMapper(conn, 'online')
+        elif isinstance(obj, OfflineCourse):
+            return CourseMapper(conn, 'offline')
 
     @classmethod
     def get_curr_mapper(cls, name):

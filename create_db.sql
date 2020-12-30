@@ -18,22 +18,44 @@ CREATE TABLE categories (
     name VARCHAR (32),
     parent_category INTEGER
 );
+
+-- ВНЕСТИ В ОДНУ ТАБЛИЦУ С УКАЗАНИЕМ ТИПА? - В ДАННЫЙ МОМЕНТ, ОНИ ОДИНАКОВЫ
 CREATE TABLE courses (
     id INTEGER PRIMARY KEY NOT NULL UNIQUE,
     name VARCHAR (32),
-    type INTEGER NOT NULL,
-    FOREIGN KEY (type) REFERENCES course_types (id)
+    type VARCHAR (32),
+    category_id INTEGER,
+    FOREIGN KEY (category_id) REFERENCES categories (id)
+--    type INTEGER NOT NULL,
+--    FOREIGN KEY (type) REFERENCES course_types (id)
 );
-CREATE TABLE course_types (
-    id INTEGER PRIMARY KEY NOT NULL UNIQUE,
-    descx VARCHAR (32)
-);
-CREATE TABLE category_course (
-    category_id INTEGER NOT NULL,
-    course_id INTEGER NOT NULL,
-    FOREIGN KEY (category_id) REFERENCES categories (id),
-    FOREIGN KEY (course_id) REFERENCES courses (id)
-);
+-- CREATE TABLE course_types (
+--    id INTEGER PRIMARY KEY NOT NULL UNIQUE,
+--    descx VARCHAR (32)
+--);
+
+-- ВНЕСТИ В ОДНУ ТАБЛИЦУ С УКАЗАНИЕМ ТИПА?
+--CREATE TABLE online_courses (
+--    id INTEGER PRIMARY KEY NOT NULL UNIQUE,
+--    name VARCHAR (32),
+--    category_id INTEGER,
+--    FOREIGN KEY (category_id) REFERENCES categories (id)
+--);
+--
+--CREATE TABLE offline_courses (
+--    id INTEGER PRIMARY KEY NOT NULL UNIQUE,
+--    name VARCHAR (32),
+--    category_id INTEGER,
+--    FOREIGN KEY (category_id) REFERENCES categories (id)
+--);
+
+-- КУРСЫ МОГУТ БЫТЬ В РАЗНЫХ КАТЕГОРИЯХ (?)
+--CREATE TABLE category_course (
+--    category_id INTEGER NOT NULL,
+--    course_id INTEGER NOT NULL,
+--    FOREIGN KEY (category_id) REFERENCES categories (id),
+--    FOREIGN KEY (course_id) REFERENCES courses (id)
+--);
 CREATE TABLE course_student (
     course_id INTEGER NOT NULL,
     student_id INTEGER NOT NULL,

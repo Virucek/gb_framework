@@ -84,7 +84,10 @@ class CategoriesListView(ListView):
     object_name_context = 'categories_list'
 
     def get_queryset(self):
-        return site.get_category_tree()
+        # return site.get_category_tree()
+        mapper = MapperRegistry.get_curr_mapper('categories')
+        return mapper.all()
+        # todo: Вернуть древовидную структуру html документу (переписав шаблон или выдачу результатов)
 
 
 @debug
@@ -92,10 +95,12 @@ class CategoryCreateView(CreateView):
     title = 'Создание категории'
     template = 'create_category.html'
     mapper = MapperRegistry.get_curr_mapper('categories')
-    categories = mapper.all()
-    extra_context = {
-        'categories_list': categories,
-    }
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        categories = self.mapper.all()
+        context['categories_list'] = categories
+        return context
 
     def create_object(self, data):
         parent_category = None
@@ -107,7 +112,6 @@ class CategoryCreateView(CreateView):
         site.categories.append(category)
         category.mark_new()
         commit()
-        # print('category.id', category.id)
 
 
 # @debug
@@ -138,9 +142,13 @@ class CategoryCreateView(CreateView):
 class CoursesListView(ListView):
     title = 'Список курсов'
     template = 'courses.html'
-    queryset = site.courses
+    # queryset = site.courses
     object_name_context = 'courses_list'
  # todo: добавить фильтрацию по категориям
+
+    def get_queryset(self):
+        mapper = MapperRegistry.get_curr_mapper('courses')
+        return mapper.all()
 
 
 # def courses_view(request):
@@ -191,17 +199,26 @@ log('Запущено приложение!')
 class CourseCreateView(CreateView):
     title = 'Создание курса'
     template = 'create_course.html'
-    extra_context = {
-        'categories_list': site.categories,
-        'course_types': site.get_course_types(),
-    }
+    # extra_context = {
+    #     'categories_list': site.categories,
+    #     'course_types': site.get_course_types(),
+    # }
+    course_mapper = MapperRegistry.get_curr_mapper('courses')
+    category_mapper = MapperRegistry.get_curr_mapper('categories')
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        context['categories_list'] = self.category_mapper.all()
+        context['course_types'] = site.get_course_types()
 
     def create_object(self, data):
         course_type = data['course_type']
         course_name = data['course_name']
-        category = site.get_category_by_id(int(data['category_id']))
+        category = self.category_mapper.get_by_id(int(data['category_id']))
         new_course = site.create_course(course_type, course_name, category)
         site.courses.append(new_course)
+        new_course.mark_new()
+        commit()
         # Привязка наблюдателей к новому курсу
         new_course.attach(sms_notifier)
         new_course.attach(email_notifier)
@@ -247,6 +264,8 @@ def copy_course_view(request):
             new_course = old_course.clone()
             new_course.name = f'{old_course.name}_copy'
             site.courses.append(new_course)
+            new_course.mark_new()
+            commit()
             # Привязка наблюдателей к курсу
             new_course.attach(sms_notifier)
             new_course.attach(email_notifier)
@@ -260,9 +279,13 @@ def copy_course_view(request):
 class StudentsListView(ListView):
     title = 'Список студентов'
     template = 'students.html'
-    queryset = site.students
+    # queryset = site.students
     object_name_context = 'students_list'
  # todo: добавить фильтрацию студентов по курсам
+
+    def get_queryset(self):
+        mapper = MapperRegistry.get_curr_mapper('students')
+        return mapper.all()
 
 # def students_view(request):
 #     q_params = request['query_params']
@@ -288,6 +311,8 @@ class StudentCreateView(CreateView):
         name = data['name']
         new_student = site.create_user('student', name)
         site.students.append(new_student)
+        new_student.mark_new()
+        commit()
 
 
 # @app.route('/student/create/')
@@ -311,10 +336,17 @@ class StudentCreateView(CreateView):
 class AddStudentToCourseCreateView(CreateView): # todo: перенести функционал по добавлению юзера из урла к курсу
     title = 'Добавление студента к курсу'
     template = 'add_student.html'
-    extra_context = {
-        'students_list': site.students,
-        'courses_list': site.courses,
-    }
+    # extra_context = {
+    #     'students_list': site.students,
+    #     'courses_list': site.courses,
+    # }
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        mapper = MapperRegistry.get_curr_mapper('students')
+        context['students_list'] = mapper.all()
+        context['courses_list'] = site.courses
+        return context
 
     def create_object(self, data):
         course_name = data['course_name']
