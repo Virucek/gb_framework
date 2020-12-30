@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block menu %}
+	{% include '/include/inc_main_menu.html' %}
+{% endblock %}
+{% block main_body %}
+    <p><a href="/student/create/">Добавить нового студента</a></p>
+    {% if students_list %}
+        {% for student in students_list %}
+            <p>{{ student.name }} <a href=/student/course/add?student={{student.name}}>Добавить к курсу</a></p>
+        {% endfor %}
+    {% else %}
+        Список студентов пуст
+    {% endif %}
+{% endblock %}

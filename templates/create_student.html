@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block menu %}
+	{% include '/include/inc_main_menu.html' %}
+{% endblock %}
+{% block main_body %}
+	<form method="post">
+		<label for="name">Имя:</label>
+		<input type="text" name="name" placeholder="Введите имя студента">
+        <br>
+        <input type="submit" value="Создать">
+        <input type="reset" value="Сбросить">
+	</form>
+{% endblock %}

@@ -1,6 +1,7 @@
 import json
 import sys
 import urllib
+from inspect import isclass
 
 from include.codes import *
 
@@ -68,7 +69,10 @@ class Application:
 
     def route(self, url):
         def wrapper(view):
-            self.routers[url] = view
+            if isclass(view):
+                self.routers[url] = view()
+            else:
+                self.routers[url] = view
         return wrapper
 
 

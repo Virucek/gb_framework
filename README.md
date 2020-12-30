@@ -2,8 +2,8 @@
 GeekBrains framework for Patterns course
 
 #### Start commands
-_uwsgi --http :9050 --wsgi-file main.py_  *start app*
+**start app** _uwsgi --http :9050 --wsgi-file main.py_
 
-_uwsgi --http :9050 --wsgi-file main.py --pyargv "fake"_ *start fake app*
+**start fake app** _uwsgi --http :9050 --wsgi-file main.py --pyargv "fake"_
 
-_uwsgi --http :9050 --wsgi-file main.py --pyargv "debug"_ *start app in debug mode*
+**start app in debug mode** _uwsgi --http :9050 --wsgi-file main.py --pyargv "debug"_
