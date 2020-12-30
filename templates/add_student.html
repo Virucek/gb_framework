@@ -5,19 +5,19 @@
 {% block main_body %}
 	<form method="post">
         {% if students_list %}
-		<select size="4" name="student_name">
+		<select size="4" name="student_id">
             {% for student in students_list %}
-            <option value="{{ student.name }}">{{ student.name }}</option>
+            <option value="{{ student.id }}">{{ student.name }}</option>
             {% endfor %}
         </select>
         {% elif student %}
         <label for="name">Имя студента:</label>
-        <input type="text" name="student_name" value="{{ student }}" readonly>
+        <input type="text" name="student_id" value="{{ student }}" readonly>
         {% endif %}
         <br>
-        <select size="4" name="course_name">
+        <select size="4" name="course_id">
             {% for course in courses_list %}
-            <option value="{{ course.name }}">{{ course.name }}</option>
+            <option value="{{ course.id }}">{{ course.name }}</option>
             {% endfor %}
         </select>
         <br>

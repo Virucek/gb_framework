@@ -210,6 +210,7 @@ class CourseCreateView(CreateView):
         context = super().get_context_data()
         context['categories_list'] = self.category_mapper.all()
         context['course_types'] = site.get_course_types()
+        return context
 
     def create_object(self, data):
         course_type = data['course_type']
@@ -333,9 +334,11 @@ class StudentCreateView(CreateView):
 #     return OK_200, render('create_student.html', context=context)
 
 @app.route('/student/course/add/')
-class AddStudentToCourseCreateView(CreateView): # todo: перенести функционал по добавлению юзера из урла к курсу
+class AddStudentToCourseCreateView(CreateView):  # todo: перенести функционал по добавлению юзера из урла к курсу
     title = 'Добавление студента к курсу'
     template = 'add_student.html'
+    student_mapper = MapperRegistry.get_curr_mapper('students')
+    courses_mapper = MapperRegistry.get_curr_mapper('courses')
     # extra_context = {
     #     'students_list': site.students,
     #     'courses_list': site.courses,
@@ -343,17 +346,18 @@ class AddStudentToCourseCreateView(CreateView): # todo: перенести фу�
 
     def get_context_data(self):
         context = super().get_context_data()
-        mapper = MapperRegistry.get_curr_mapper('students')
-        context['students_list'] = mapper.all()
-        context['courses_list'] = site.courses
+        context['students_list'] = self.student_mapper.all()
+        context['courses_list'] = self.courses_mapper.all()
         return context
 
     def create_object(self, data):
-        course_name = data['course_name']
-        student_name = data['student_name']
-        course = site.get_course_by_name(course_name)
-        student = site.get_student_by_name(student_name)
-        course.add_student(student)
+        course_id = data['course_id']
+        student_id = data['student_id']
+        course = self.courses_mapper.get_by_id(course_id)
+        student = self.student_mapper.get_by_id(student_id)
+        course_student = course.add_student(student)
+        course_student.mark_new()
+        commit()
 
 
 # @app.route('/student/course/add/')

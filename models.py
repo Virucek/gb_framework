@@ -77,6 +77,7 @@ class Course(PrototypeMixin, Subject):
         student.courses.append(self)
         self._subject_state = student
         self._notify()
+        return CourseStudent(self, student)
 
     @property
     def new_student(self):
@@ -110,6 +111,13 @@ class SmsNotifier(Observer):
 class EmailNotifier(Observer):
     def update(self, subject):
         print(f'EMAIL: студент {subject.new_student.name} присоединился к курсу {subject.name}')
+
+
+class CourseStudent(DomainObject):  # Курс - студент, связь многие ко многим
+
+    def __init__(self, course, student):
+        self.course = course
+        self.student = student
 
 
 class BaseSerializer:

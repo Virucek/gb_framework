@@ -1,6 +1,6 @@
 import sqlite3
 
-from models import Student, Category, Course, OnlineCourse, OfflineCourse
+from models import Student, Category, Course, OnlineCourse, OfflineCourse, CourseStudent
 
 dbname = 'db.sqlite'
 conn = sqlite3.connect(dbname)
@@ -46,11 +46,14 @@ class StudentMapper(BaseMapper):
         return result
 
     def get_by_id(self, id):
-        statement = f'SELECT * FROM {self.tablename} WHERE id = ?'
+        statement = f'SELECT name FROM {self.tablename} WHERE id = ?'
         self.cursor.execute(statement, (id,))
         result = self.cursor.fetchone()
         if result:
-            return Student(*result)
+            name_ = result[0]
+            student = Student(name_)
+            student.id = id
+            return student
         else:
             raise RecordNotFoundException(f'record with id = {id} not found')
 
@@ -89,12 +92,12 @@ class CategoryMapper(BaseMapper):
         return result
 
     def get_by_id(self, id):
-        statement = f'SELECT * FROM {self.tablename} WHERE id = ?'
+        statement = f'SELECT name, parent_category FROM {self.tablename} WHERE id = ?'
         self.cursor.execute(statement, (id,))
         result = self.cursor.fetchone()
         print('result category by id', result)
         if result:
-            id, name, parent_category = result
+            name, parent_category = result
             category = Category(name, parent_category)
             category.id = id
             return category
@@ -153,9 +156,11 @@ class CourseMapper(BaseMapper):
             name, type_, category_id = result
             category = self.cat_mapper.get_by_id(category_id)
             if type_ == 'online':
-                return OnlineCourse(name, category)
+                course = OnlineCourse(name, category)
             else:
-                return OfflineCourse(name, category)
+                course = OfflineCourse(name, category)
+            course.id = id
+            return course
         else:
             raise RecordNotFoundException(f'record with id = {id} not found')
 
@@ -169,6 +174,42 @@ class CourseMapper(BaseMapper):
             raise CommitException(e)
 
     def delete(self, obj):
+        statement = f'DELETE FROM {self.tablename} WHERE id = ?'
+        self.cursor.execute(statement, (obj.id,))
+        try:
+            self.connection.commit()
+        except Exception as e:
+            raise DeleteException(e)
+
+
+class CourseStudentMapper(BaseMapper):
+    def __init__(self, connection):
+        super().__init__(connection)
+        self.tablename = 'course_student'
+        self.student_mapper = MapperRegistry.get_curr_mapper('students')
+
+    def get_students_by_course(self, course):
+        statement = f'SELECT student_id FROM {self.tablename} WHERE course_id = ?'
+        self.cursor.execute(statement, (course.id,))
+        result = self.cursor.fetchone()
+        if result:
+            student_id = result[0]
+            student = self.student_mapper.get_by_id(student_id)
+            return student
+        else:
+            raise RecordNotFoundException(f'record with course_id = {course.id} not found')
+
+    def insert(self, obj):
+        statement = f'INSERT INTO {self.tablename} (course_id, student_id)' \
+                        f' VALUES (?, ?)'
+        self.cursor.execute(statement, (obj.course.id, obj.student.id,))
+        try:
+            self.connection.commit()
+        except Exception as e:
+            raise CommitException(e)
+
+    def delete(self, obj):
+        # todo: obj.id -- ?
         statement = f'DELETE FROM {self.tablename} WHERE id = ?'
         self.cursor.execute(statement, (obj.id,))
         try:
@@ -214,6 +255,7 @@ class MapperRegistry:
         'students': StudentMapper,
         'categories': CategoryMapper,
         'courses': CourseMapper,
+        'course_student': CourseStudentMapper,
         # 'category_course': CategoryCourseMapper,
     }
 
@@ -227,6 +269,8 @@ class MapperRegistry:
             return CourseMapper(conn, 'online')
         elif isinstance(obj, OfflineCourse):
             return CourseMapper(conn, 'offline')
+        elif isinstance(obj, CourseStudent):
+            return CourseStudentMapper(conn)
 
     @classmethod
     def get_curr_mapper(cls, name):
