@@ -124,18 +124,20 @@ class CategoryMapper(BaseMapper):
 
 
 class CourseMapper(BaseMapper):
-    def __init__(self, connection, type):
+    def __init__(self, connection, type_=None):
         super().__init__(connection)
-        self.type = type
+        self.type_ = type_
         self.tablename = 'courses'
+        self.cat_mapper = MapperRegistry.get_curr_mapper('categories')
 
     def all(self):
         statement = f'SELECT * FROM {self.tablename}'
         self.cursor.execute(statement)
         result = []
         for rec in self.cursor.fetchall():
-            id, name, type, category = rec
-            if type == 'online':
+            id, name, type_, category_id = rec
+            category = self.cat_mapper.get_by_id(category_id)
+            if type_ == 'online':
                 course = OnlineCourse(name, category)
             else:
                 course = OfflineCourse(name, category)
@@ -144,11 +146,12 @@ class CourseMapper(BaseMapper):
         return result
 
     def get_by_id(self, id):
-        statement = f'SELECT name, type, category FROM {self.tablename} WHERE id = ?'
+        statement = f'SELECT name, type, category_id FROM {self.tablename} WHERE id = ?'
         self.cursor.execute(statement, (id,))
         result = self.cursor.fetchone()
         if result:
-            name, type_, category = result
+            name, type_, category_id = result
+            category = self.cat_mapper.get_by_id(category_id)
             if type_ == 'online':
                 return OnlineCourse(name, category)
             else:
@@ -157,9 +160,9 @@ class CourseMapper(BaseMapper):
             raise RecordNotFoundException(f'record with id = {id} not found')
 
     def insert(self, obj):
-        statement = f'INSERT INTO {self.tablename} (id, name)' \
+        statement = f'INSERT INTO {self.tablename} (name, type, category_id)' \
                         f' VALUES (?, ?, ?)'
-        self.cursor.execute(statement, (obj.id, obj.name, obj.type,))
+        self.cursor.execute(statement, (obj.name, self.type_, obj.category.id,))
         try:
             self.connection.commit()
         except Exception as e:
@@ -174,36 +177,36 @@ class CourseMapper(BaseMapper):
             raise DeleteException(e)
 
 
-class CategoryCourseMapper(BaseMapper):
-
-    def __init__(self, connection):
-        super().__init__(connection)
-        self.tablename = 'category_course'
-
-    def get_by_category_id(self, cat_id, course_mapper):
-        statement = f'SELECT course_id FROM {self.tablename} WHERE category_id = ?'
-        self.cursor.execute(statement, (cat_id,))
-        result = []
-        for course_id in self.cursor.fetchall():
-            result.append(course_mapper.get_by_id(course_id))
-        return result
-
-    def insert(self, category, course):
-        statement = f'INSERT INTO {self.tablename} (CATEGORY_ID, COURSE_ID) ' \
-                    f'VALUES (?, ?)'
-        self.cursor.execute(statement, (course.id, category.id,))
-        try:
-            self.connection.commit()
-        except Exception as e:
-            raise CommitException(e)
-
-    def delete(self, category, course):
-        statement = f'DELETE FROM {self.tablename} WHERE category_id = ? AND course_id = ?'
-        self.cursor.execute(statement, (category.id, course.id,))
-        try:
-            self.connection.commit()
-        except Exception as e:
-            raise DeleteException(e)
+# class CategoryCourseMapper(BaseMapper):
+#
+#     def __init__(self, connection):
+#         super().__init__(connection)
+#         self.tablename = 'category_course'
+#
+#     def get_by_category_id(self, cat_id, course_mapper):
+#         statement = f'SELECT course_id FROM {self.tablename} WHERE category_id = ?'
+#         self.cursor.execute(statement, (cat_id,))
+#         result = []
+#         for course_id in self.cursor.fetchall():
+#             result.append(course_mapper.get_by_id(course_id))
+#         return result
+#
+#     def insert(self, category, course):
+#         statement = f'INSERT INTO {self.tablename} (CATEGORY_ID, COURSE_ID) ' \
+#                     f'VALUES (?, ?)'
+#         self.cursor.execute(statement, (course.id, category.id,))
+#         try:
+#             self.connection.commit()
+#         except Exception as e:
+#             raise CommitException(e)
+#
+#     def delete(self, category, course):
+#         statement = f'DELETE FROM {self.tablename} WHERE category_id = ? AND course_id = ?'
+#         self.cursor.execute(statement, (category.id, course.id,))
+#         try:
+#             self.connection.commit()
+#         except Exception as e:
+#             raise DeleteException(e)
 
 
 class MapperRegistry:
@@ -211,7 +214,7 @@ class MapperRegistry:
         'students': StudentMapper,
         'categories': CategoryMapper,
         'courses': CourseMapper,
-        'category_course': CategoryCourseMapper,
+        # 'category_course': CategoryCourseMapper,
     }
 
     @staticmethod
