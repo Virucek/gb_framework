@@ -3,6 +3,7 @@ import json
 
 from patterns.behavioral.observer import Observer, Subject
 from patterns.creational.prototype import PrototypeMixin
+from patterns.orm.unit_of_work import DomainObject
 
 
 class User:
@@ -10,13 +11,13 @@ class User:
         self.name = name
 
 
-class Student(User):
+class Student(User, DomainObject):
     def __init__(self, name):
         self.courses = []
         super(Student, self).__init__(name)
 
 
-class Teacher(User):
+class Teacher(User, DomainObject):
     pass
 
 
@@ -32,12 +33,12 @@ class UserFactory:
 
 
 # Категории Курсов
-class Category:
-    id_ = 0
+class Category(DomainObject):
+    # id_ = 0
 
-    def __init__(self, name, parent_category):
-        self.id = Category.id_
-        Category.id_ += 1
+    def __init__(self, name, parent_category=None):
+        # self.id = Category.id_
+        # Category.id_ += 1
         self.name = name
         self.courses = []
         self.parent_category = parent_category
@@ -76,17 +77,18 @@ class Course(PrototypeMixin, Subject):
         student.courses.append(self)
         self._subject_state = student
         self._notify()
+        return CourseStudent(self, student)
 
     @property
     def new_student(self):
         return self._subject_state
 
 
-class OnlineCourse(Course):
+class OnlineCourse(Course, DomainObject):
     pass
 
 
-class OfflineCourse(Course):
+class OfflineCourse(Course, DomainObject):
     pass
 
 
@@ -109,6 +111,13 @@ class SmsNotifier(Observer):
 class EmailNotifier(Observer):
     def update(self, subject):
         print(f'EMAIL: студент {subject.new_student.name} присоединился к курсу {subject.name}')
+
+
+class CourseStudent(DomainObject):  # Курс - студент, связь многие ко многим
+
+    def __init__(self, course, student):
+        self.course = course
+        self.student = student
 
 
 class BaseSerializer:

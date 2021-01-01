@@ -7,9 +7,12 @@ from core.app_cbv import ListView, CreateView
 from core.debug_app import DebugApplication
 from core.fake_app import FakeApplication
 from core.templator import render
+from db.create_db import create_db
+from db.mappers import MapperRegistry
 from include.codes import *
 from logger import Logger, FileWriter
 from models import MainInterface, EmailNotifier, SmsNotifier, BaseSerializer
+from patterns.orm.unit_of_work import UnitOfWork
 
 site = MainInterface()
 # Настройка логгера
@@ -20,6 +23,12 @@ debug = logger.debug
 # Определение наблюдателей
 email_notifier = EmailNotifier()
 sms_notifier = SmsNotifier()
+
+# Определение Базы и мапперов
+create_db()
+UnitOfWork.new_current()
+UnitOfWork.get_current().set_mapper_registry(MapperRegistry)
+commit = UnitOfWork.get_current().commit
 
 
 @debug
@@ -75,25 +84,34 @@ class CategoriesListView(ListView):
     object_name_context = 'categories_list'
 
     def get_queryset(self):
-        return site.get_category_tree()
+        # return site.get_category_tree()
+        mapper = MapperRegistry.get_curr_mapper('categories')
+        return mapper.all()
+        # todo: Вернуть древовидную структуру html документу (переписав шаблон или выдачу результатов)
 
 
 @debug
 class CategoryCreateView(CreateView):
     title = 'Создание категории'
     template = 'create_category.html'
-    extra_context = {
-        'categories_list': site.categories,
-    }
+    mapper = MapperRegistry.get_curr_mapper('categories')
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        categories = self.mapper.all()
+        context['categories_list'] = categories
+        return context
 
     def create_object(self, data):
         parent_category = None
         category_id = data.get('category_id')
         if category_id:
-            parent_category = site.get_category_by_id(int(category_id))
+            parent_category = self.mapper.get_by_id(int(category_id))
         category_name = data['cat_name']
         category = site.create_category(category_name, parent_category)
         site.categories.append(category)
+        category.mark_new()
+        commit()
 
 
 # @debug
@@ -124,9 +142,13 @@ class CategoryCreateView(CreateView):
 class CoursesListView(ListView):
     title = 'Список курсов'
     template = 'courses.html'
-    queryset = site.courses
+    # queryset = site.courses
     object_name_context = 'courses_list'
  # todo: добавить фильтрацию по категориям
+
+    def get_queryset(self):
+        mapper = MapperRegistry.get_curr_mapper('courses')
+        return mapper.all()
 
 
 # def courses_view(request):
@@ -177,17 +199,27 @@ log('Запущено приложение!')
 class CourseCreateView(CreateView):
     title = 'Создание курса'
     template = 'create_course.html'
-    extra_context = {
-        'categories_list': site.categories,
-        'course_types': site.get_course_types(),
-    }
+    # extra_context = {
+    #     'categories_list': site.categories,
+    #     'course_types': site.get_course_types(),
+    # }
+    course_mapper = MapperRegistry.get_curr_mapper('courses')
+    category_mapper = MapperRegistry.get_curr_mapper('categories')
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        context['categories_list'] = self.category_mapper.all()
+        context['course_types'] = site.get_course_types()
+        return context
 
     def create_object(self, data):
         course_type = data['course_type']
         course_name = data['course_name']
-        category = site.get_category_by_id(int(data['category_id']))
+        category = self.category_mapper.get_by_id(int(data['category_id']))
         new_course = site.create_course(course_type, course_name, category)
         site.courses.append(new_course)
+        new_course.mark_new()
+        commit()
         # Привязка наблюдателей к новому курсу
         new_course.attach(sms_notifier)
         new_course.attach(email_notifier)
@@ -233,6 +265,8 @@ def copy_course_view(request):
             new_course = old_course.clone()
             new_course.name = f'{old_course.name}_copy'
             site.courses.append(new_course)
+            new_course.mark_new()
+            commit()
             # Привязка наблюдателей к курсу
             new_course.attach(sms_notifier)
             new_course.attach(email_notifier)
@@ -246,9 +280,13 @@ def copy_course_view(request):
 class StudentsListView(ListView):
     title = 'Список студентов'
     template = 'students.html'
-    queryset = site.students
+    # queryset = site.students
     object_name_context = 'students_list'
  # todo: добавить фильтрацию студентов по курсам
+
+    def get_queryset(self):
+        mapper = MapperRegistry.get_curr_mapper('students')
+        return mapper.all()
 
 # def students_view(request):
 #     q_params = request['query_params']
@@ -274,6 +312,8 @@ class StudentCreateView(CreateView):
         name = data['name']
         new_student = site.create_user('student', name)
         site.students.append(new_student)
+        new_student.mark_new()
+        commit()
 
 
 # @app.route('/student/create/')
@@ -294,20 +334,30 @@ class StudentCreateView(CreateView):
 #     return OK_200, render('create_student.html', context=context)
 
 @app.route('/student/course/add/')
-class AddStudentToCourseCreateView(CreateView): # todo: перенести функционал по добавлению юзера из урла к курсу
+class AddStudentToCourseCreateView(CreateView):  # todo: перенести функционал по добавлению юзера из урла к курсу
     title = 'Добавление студента к курсу'
     template = 'add_student.html'
-    extra_context = {
-        'students_list': site.students,
-        'courses_list': site.courses,
-    }
+    student_mapper = MapperRegistry.get_curr_mapper('students')
+    courses_mapper = MapperRegistry.get_curr_mapper('courses')
+    # extra_context = {
+    #     'students_list': site.students,
+    #     'courses_list': site.courses,
+    # }
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        context['students_list'] = self.student_mapper.all()
+        context['courses_list'] = self.courses_mapper.all()
+        return context
 
     def create_object(self, data):
-        course_name = data['course_name']
-        student_name = data['student_name']
-        course = site.get_course_by_name(course_name)
-        student = site.get_student_by_name(student_name)
-        course.add_student(student)
+        course_id = data['course_id']
+        student_id = data['student_id']
+        course = self.courses_mapper.get_by_id(course_id)
+        student = self.student_mapper.get_by_id(student_id)
+        course_student = course.add_student(student)
+        course_student.mark_new()
+        commit()
 
 
 # @app.route('/student/course/add/')
