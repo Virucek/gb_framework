@@ -57,6 +57,7 @@ CREATE TABLE courses (
 --    FOREIGN KEY (course_id) REFERENCES courses (id)
 --);
 CREATE TABLE course_student (
+    id INTEGER PRIMARY KEY NOT NULL UNIQUE,
     course_id INTEGER NOT NULL,
     student_id INTEGER NOT NULL,
     FOREIGN KEY (course_id) REFERENCES courses (id),
