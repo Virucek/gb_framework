@@ -27,6 +27,11 @@ class BaseMapper:
         self.cursor = connection.cursor()
         self.tablename = 'tablename'
 
+    def get_last_id(self):
+        statement = f'SELECT MAX(id) from {self.tablename}'
+        self.cursor.execute(statement)
+        return self.cursor.fetchone()[0]
+
 
 class StudentMapper(BaseMapper):
 
@@ -187,17 +192,34 @@ class CourseStudentMapper(BaseMapper):
         super().__init__(connection)
         self.tablename = 'course_student'
         self.student_mapper = MapperRegistry.get_curr_mapper('students')
+        self.course_mapper = MapperRegistry.get_curr_mapper('courses')
+
+    def all(self):
+        statement = f'SELECT * FROM {self.tablename}'
+        self.cursor.execute(statement)
+        result = []
+        for rec in self.cursor.fetchall():
+            id, course_id, student_id = rec
+            course = self.course_mapper.get_by_id(course_id)
+            student = self.student_mapper.get_by_id(student_id)
+            course_student = CourseStudent(course, student)
+            course_student.id = id
+            result.append(course_student)
+        return result
 
     def get_students_by_course(self, course):
         statement = f'SELECT student_id FROM {self.tablename} WHERE course_id = ?'
         self.cursor.execute(statement, (course.id,))
-        result = self.cursor.fetchone()
-        if result:
-            student_id = result[0]
-            student = self.student_mapper.get_by_id(student_id)
-            return student
+        res_statement = self.cursor.fetchall()
+        result = []
+        if res_statement:
+            for rec in res_statement:
+                student_id = rec[0]
+                student = self.student_mapper.get_by_id(student_id)
+                result.append(student)
         else:
             raise RecordNotFoundException(f'record with course_id = {course.id} not found')
+        return result
 
     def insert(self, obj):
         statement = f'INSERT INTO {self.tablename} (course_id, student_id)' \
@@ -271,6 +293,13 @@ class MapperRegistry:
             return CourseMapper(conn, 'offline')
         elif isinstance(obj, CourseStudent):
             return CourseStudentMapper(conn)
+
+    @classmethod
+    def get_mapper_name(cls, registry):
+        for mapper in cls.mappers:
+            cls_mapper_ = cls.mappers[mapper]
+            if isinstance(registry, cls_mapper_):
+                return mapper
 
     @classmethod
     def get_curr_mapper(cls, name):
