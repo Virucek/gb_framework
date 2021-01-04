@@ -125,10 +125,16 @@ class BaseSerializer:
         self.object = object
 
     def save(self):
-        return json.dumps(self.object)
+        try:
+            return json.dumps(self.object)
+        except TypeError as e:
+            print(f'Problem trying to serialize object to json:\n {e}')
 
     def load(self):
-        return json.loads(self.object)
+        try:
+            return json.loads(self.object)
+        except json.JSONDecodeError as e:
+            print(f'Problem trying to deserialize object from json:\n {e}')
 
 
 # Основной интерфейс
@@ -162,8 +168,13 @@ class MainInterface:
         raise Exception(f'Категория с id {id} отсутствует')
 
     def get_courses_by_category(self, category_id):
-        category = self.get_category_by_id(int(category_id))
-        return category.courses
+        try:
+            category_id = int(category_id)
+        except ValueError:
+            print('Category id должен быть числом!')
+        else:
+            category = self.get_category_by_id(category_id)
+            return category.courses
 
     @staticmethod
     def get_course_types():

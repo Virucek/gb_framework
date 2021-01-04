@@ -4,6 +4,8 @@ from datetime import datetime
 
 from patterns.creational.singletones import SingletoneName
 
+LOG_DIR = 'logs'
+
 
 # Класс записи в консоль
 class ConsoleWriter:
@@ -15,7 +17,7 @@ class ConsoleWriter:
 class FileWriter:
     def __init__(self, name):
         datetime_ = datetime.now().strftime("%d.%m.%y_%I_%M")
-        self.file = os.path.join('logs', f'{name}-{datetime_}')
+        self.file = os.path.join(LOG_DIR, f'{name}-{datetime_}')
 
     def write(self, text):
         with open(self.file, 'a', encoding='utf-8') as f:
