@@ -11,7 +11,7 @@ from db.create_db import create_db
 from db.mappers import MapperRegistry
 from include.codes import *
 from logger import Logger, FileWriter
-from models import MainInterface, EmailNotifier, SmsNotifier, BaseSerializer
+from models import MainInterface, EmailNotifier, SmsNotifier, BaseSerializer, Category
 from patterns.orm.unit_of_work import UnitOfWork
 
 site = MainInterface()
@@ -410,3 +410,29 @@ def course_api(request):
     res = BaseSerializer(res_dict).save()
     log(f'Вызван api курсов - {res}')
     return OK_200, res
+
+
+# if __name__ == '__main__':
+#     create_db('test.sqlite')
+#     UnitOfWork.new_current()
+#     UnitOfWork.get_current().set_mapper_registry(MapperRegistry)
+#     uow = UnitOfWork.get_current()
+#
+#     cat1 = Category('test1')
+#     cat1.mark_new()
+#     uow.commit()
+#
+#     cat_1 = uow.get_by_id('categories', 1)
+#     cat_2 = uow.get_by_id('categories', 1)
+#
+#     assert cat_1 == cat_2, "ID_MAP DOESN'T WORK, HAHAHA"
+#     print('cat_1', cat_1)
+#     print('cat_2', cat_2)
+#
+#     c_mapper = MapperRegistry.get_curr_mapper('categories')
+#     category_1 = c_mapper.get_by_id(1)
+#     category_2 = c_mapper.get_by_id(1)
+#
+#     assert category_1 != category_2, "WITHOUT IDMAP OBJECTS ARE SAME, HAHAHA!!"
+#     print(category_1)
+#     print(category_2)
